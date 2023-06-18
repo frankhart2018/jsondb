@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Optional
 
 
 def perform_op(left_operand: any, right_operand: any, operator: str) -> bool:
@@ -11,7 +12,11 @@ def perform_op(left_operand: any, right_operand: any, operator: str) -> bool:
         f'"{right_operand}"' if type(right_operand) == str else right_operand
     )
     exec(f"output.append({left_operand} {operator} {right_operand})")
-    return output[0]
+
+    if isinstance(output[0], bool):
+        return output[0]
+    else:
+        return output[0] is not None
 
 
 CONDITION_MAP = {
@@ -21,6 +26,7 @@ CONDITION_MAP = {
     "gt": ">",
     "lte": "<=",
     "gte": ">=",
+    "all": "+",
 }
 
 
@@ -46,17 +52,27 @@ class JsonDb:
 
         return self
 
-    def where(self, condition: str, key: str, value: str) -> "JsonDb":
+    def where(
+        self, condition: str, key: Optional[str] = "", value: Optional[any] = None
+    ) -> "JsonDb":
         self.__current_chunk = []
 
         for item in self.__data:
-            if perform_op(item[key], value, CONDITION_MAP[condition]):
+            key_val = item[key] if key in item else ""
+            value_val = value if value is not None else ""
+            if perform_op(key_val, value_val, CONDITION_MAP[condition]):
                 self.__current_chunk.append(item)
 
         return self
 
     def insert(self, data: dict[str, any]) -> None:
         self.__data.append(data)
+
+    def update(self, key: str, value: any) -> "JsonDb":
+        for item in self.__current_chunk:
+            item[key] = value
+
+        return self
 
     def fetch_value(self) -> list[dict[str, any]]:
         return self.__current_chunk
