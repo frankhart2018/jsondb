@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 from typing import Optional
 import uuid
 
@@ -38,9 +39,22 @@ class JsonDb:
             raise ValueError(f"Directory {dir_name} does not exist!")
 
         self.__file_path: str = file_path
-        self.__data: list[dict[str, any]] = []
+        self.__data: list[dict[str, any]] = self.__load_data(file_path)
         self.__current_chunk: list[dict[str, any]] = None
         self.__add_id: bool = add_id
+
+    def __load_data(self, file_path: str) -> list[dict[str, any]]:
+        if not os.path.exists(os.path.abspath(file_path)):
+            return []
+
+        mode = "rb" if file_path.endswith(".jsonb") else "r"
+        with open(file_path, mode) as f:
+            if file_path.endswith(".json"):
+                return json.load(f)
+            elif file_path.endswith(".jsonb"):
+                return pickle.load(f)
+            else:
+                raise ValueError("Invalid file extension!")
 
     def select(self, keys: Optional[list[str]] = None) -> "JsonDb":
         if keys is None:
@@ -91,7 +105,14 @@ class JsonDb:
     def fetch_value(self) -> list[dict[str, any]]:
         return self.__current_chunk
 
-    def commit(self, only_value=False) -> None:
+    def commit(
+        self, only_value: Optional[bool] = False, as_binary: Optional[bool] = False
+    ) -> None:
         data = self.__data if not only_value else self.__current_chunk
-        with open(self.__file_path, "w") as f:
-            json.dump(data, f, indent=4)
+        mode = "wb" if as_binary else "w"
+        file_path = self.__file_path + "b" if as_binary else self.__file_path
+        with open(file_path, mode) as f:
+            if as_binary:
+                pickle.dump(data, f)
+            else:
+                json.dump(data, f, indent=4)
