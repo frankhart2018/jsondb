@@ -17,6 +17,10 @@ def main():
     val = db_obj.fetch_value()
     print(val)
 
+    db_obj = db_obj.select()
+    val = db_obj.fetch_value()
+    print(val)
+
     db_obj.commit()
 
 

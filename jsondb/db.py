@@ -40,7 +40,11 @@ class JsonDb:
         self.__data: list[dict[str, any]] = []
         self.__current_chunk: list[dict[str, any]] = None
 
-    def select(self, keys: list[str]) -> "JsonDb":
+    def select(self, keys: Optional[list[str]] = None) -> "JsonDb":
+        if keys is None:
+            self.__current_chunk = self.__data
+            return self
+
         self.__current_chunk = []
         for item in self.__data:
             temp_val: dict[str, any] = {}
