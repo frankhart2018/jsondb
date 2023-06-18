@@ -1,1 +1,17 @@
-[]
+[
+    {
+        "name": "John",
+        "age": 20,
+        "__id": "c9472415fa254f858a54dfd4e852ac4d"
+    },
+    {
+        "name": "John",
+        "age": 21,
+        "__id": "fa9e49fe288c4422b98558c20d12968c"
+    },
+    {
+        "name": "John",
+        "age": 21,
+        "__id": "3566401da79949a3afba95e510facb1e"
+    }
+]

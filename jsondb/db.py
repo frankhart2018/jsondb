@@ -1,6 +1,7 @@
 import json
 import os
 from typing import Optional
+import uuid
 
 
 def perform_op(left_operand: any, right_operand: any, operator: str) -> bool:
@@ -31,7 +32,7 @@ CONDITION_MAP = {
 
 
 class JsonDb:
-    def __init__(self, file_path: str) -> None:
+    def __init__(self, file_path: str, add_id: Optional[bool] = False) -> None:
         dir_name = os.path.dirname(file_path)
         if not os.path.exists(os.path.abspath(dir_name)):
             raise ValueError(f"Directory {dir_name} does not exist!")
@@ -39,6 +40,7 @@ class JsonDb:
         self.__file_path: str = file_path
         self.__data: list[dict[str, any]] = []
         self.__current_chunk: list[dict[str, any]] = None
+        self.__add_id: bool = add_id
 
     def select(self, keys: Optional[list[str]] = None) -> "JsonDb":
         if keys is None:
@@ -70,6 +72,8 @@ class JsonDb:
         return self
 
     def insert(self, data: dict[str, any]) -> None:
+        if self.__add_id:
+            data["__id"] = uuid.uuid4().hex
         self.__data.append(data)
 
     def update(self, key: str, value: any) -> "JsonDb":
