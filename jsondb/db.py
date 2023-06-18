@@ -78,6 +78,12 @@ class JsonDb:
 
         return self
 
+    def delete(self) -> "JsonDb":
+        for item in self.__current_chunk:
+            self.__data.remove(item)
+
+        return self
+
     def fetch_value(self) -> list[dict[str, any]]:
         return self.__current_chunk
 

@@ -21,6 +21,12 @@ def main():
     val = db_obj.fetch_value()
     print(val)
 
+    db_obj = db_obj.where("eq", "age", 21).delete()
+
+    db_obj = db_obj.select()
+    val = db_obj.fetch_value()
+    print(val)
+
     db_obj.commit()
 
 
