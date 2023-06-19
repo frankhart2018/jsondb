@@ -61,14 +61,16 @@ class JsonDb:
             self.__current_chunk = self.__data
             return self
 
-        self.__current_chunk = []
+        temp_chunk = []
         for item in self.__data:
             temp_val: dict[str, any] = {}
             for key in keys:
                 if key in item:
                     temp_val[key] = item[key]
 
-            self.__current_chunk.append(temp_val)
+            temp_chunk.append(temp_val)
+
+        self.__current_chunk = temp_chunk
 
         return self
 
