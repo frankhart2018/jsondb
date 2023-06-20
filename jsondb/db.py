@@ -33,13 +33,20 @@ CONDITION_MAP = {
 
 
 class JsonDb:
-    def __init__(self, file_path: str, add_id: Optional[bool] = False) -> None:
+    def __init__(
+        self,
+        file_path: str,
+        add_id: Optional[bool] = False,
+        overwrite: Optional[bool] = False,
+    ) -> None:
         dir_name = os.path.dirname(file_path)
         if not os.path.exists(os.path.abspath(dir_name)):
             raise ValueError(f"Directory {dir_name} does not exist!")
 
         self.__file_path: str = file_path
-        self.__data: list[dict[str, any]] = self.__load_data(file_path)
+        self.__data: list[dict[str, any]] = (
+            self.__load_data(file_path) if not overwrite else []
+        )
         self.__current_chunk: list[dict[str, any]] = None
         self.__add_id: bool = add_id
 
