@@ -57,12 +57,12 @@ class JsonDb:
                 raise ValueError("Invalid file extension!")
 
     def select(self, keys: Optional[list[str]] = None) -> "JsonDb":
-        if keys is None:
+        if keys is None or self.__current_chunk is None:
             self.__current_chunk = self.__data
             return self
 
         temp_chunk = []
-        for item in self.__data:
+        for item in self.__current_chunk:
             temp_val: dict[str, any] = {}
             for key in keys:
                 if key in item:
