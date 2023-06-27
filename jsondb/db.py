@@ -66,7 +66,8 @@ class JsonDb:
     def select(self, keys: Optional[list[str]] = None) -> "JsonDb":
         if keys is None or self.__current_chunk is None:
             self.__current_chunk = self.__data
-            return self
+            if keys is None:
+                return self
 
         temp_chunk = []
         for item in self.__current_chunk:
