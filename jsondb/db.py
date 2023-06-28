@@ -38,6 +38,7 @@ class JsonDb:
         file_path: str,
         add_id: Optional[bool] = False,
         overwrite: Optional[bool] = False,
+        read_mode: Optional[bool] = False,
     ) -> None:
         dir_name = os.path.dirname(file_path)
         if not os.path.exists(os.path.abspath(dir_name)):
@@ -49,6 +50,7 @@ class JsonDb:
         )
         self.__current_chunk: list[dict[str, any]] = None
         self.__add_id: bool = add_id
+        self.__read_mode: bool = read_mode
 
     def __load_data(self, file_path: str) -> list[dict[str, any]]:
         if not os.path.exists(os.path.abspath(file_path)):
@@ -96,27 +98,42 @@ class JsonDb:
         return self
 
     def insert(self, data: dict[str, any]) -> None:
+        if self.__read_mode:
+            raise ValueError("Cannot insert data in read mode!")
+
         if self.__add_id:
             data["__id"] = uuid.uuid4().hex
         self.__data.append(data)
 
     def update(self, key: str, value: any) -> "JsonDb":
+        if self.__read_mode:
+            raise ValueError("Cannot update data in read mode!")
+
         for item in self.__current_chunk:
             item[key] = value
 
         return self
 
     def delete(self) -> "JsonDb":
+        if self.__read_mode:
+            raise ValueError("Cannot delete data in read mode!")
+
         for item in self.__current_chunk:
             self.__data.remove(item)
 
         return self
 
     def truncate(self) -> "JsonDb":
+        if self.__read_mode:
+            raise ValueError("Cannot truncate data in read mode!")
+
         self.__data = []
         return self
 
     def insert_batch(self, data: list[dict[str, any]]) -> None:
+        if self.__read_mode:
+            raise ValueError("Cannot insert data in read mode!")
+
         for item in data:
             self.insert(item)
 
@@ -126,6 +143,9 @@ class JsonDb:
     def commit(
         self, only_value: Optional[bool] = False, as_binary: Optional[bool] = False
     ) -> None:
+        if self.__read_mode:
+            raise ValueError("Cannot commit data in read mode!")
+
         data = self.__data if not only_value else self.__current_chunk
         mode = "wb" if as_binary else "w"
         file_path = self.__file_path + "b" if as_binary else self.__file_path
