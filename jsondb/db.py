@@ -112,6 +112,14 @@ class JsonDb:
 
         return self
 
+    def truncate(self) -> "JsonDb":
+        self.__data = []
+        return self
+
+    def insert_batch(self, data: list[dict[str, any]]) -> None:
+        for item in data:
+            self.insert(item)
+
     def fetch_value(self) -> list[dict[str, any]]:
         return self.__current_chunk
 

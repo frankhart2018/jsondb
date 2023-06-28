@@ -1,3 +1,3 @@
-__version__ = "0.0.1-alpha1"
+__version__ = "0.0.1-alpha2"
 
 from .db import JsonDb
