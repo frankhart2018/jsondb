@@ -39,31 +39,35 @@ class JsonDb:
         add_id: Optional[bool] = False,
         overwrite: Optional[bool] = False,
         read_mode: Optional[bool] = False,
+        is_binary: Optional[bool] = False,
     ) -> None:
         dir_name = os.path.dirname(file_path)
         if not os.path.exists(os.path.abspath(dir_name)):
             raise ValueError(f"Directory {dir_name} does not exist!")
 
+        file_ext = file_path.split(".")[-1]
+        if is_binary and file_ext != "jsonb":
+            raise ValueError(f"Binary dumping requires a file with extension '.jsonb'")
+        elif not is_binary and file_ext == "jsonb":
+            raise ValueError(
+                f"A '.jsonb' file needs to be loaded in binary mode, set is_binary to True"
+            )
+
         self.__file_path: str = file_path
+        self.__binary_mode = "" if not is_binary else "b"
         self.__data: list[dict[str, any]] = (
             self.__load_data(file_path) if not overwrite else []
         )
         self.__current_chunk: list[dict[str, any]] = None
-        self.__add_id: bool = add_id
-        self.__read_mode: bool = read_mode
+        self.__add_id = add_id
+        self.__read_mode = read_mode
 
     def __load_data(self, file_path: str) -> list[dict[str, any]]:
         if not os.path.exists(os.path.abspath(file_path)):
             return []
 
-        mode = "rb" if file_path.endswith(".jsonb") else "r"
-        with open(file_path, mode) as f:
-            if file_path.endswith(".json"):
-                return json.load(f)
-            elif file_path.endswith(".jsonb"):
-                return pickle.load(f)
-            else:
-                raise ValueError("Invalid file extension!")
+        with open(file_path, f"r{self.__binary_mode}") as f:
+            return pickle.load(f) if self.__binary_mode else json.load(f)
 
     def select(self, keys: Optional[list[str]] = None) -> "JsonDb":
         if keys is None or self.__current_chunk is None:
@@ -140,17 +144,13 @@ class JsonDb:
     def fetch_value(self) -> list[dict[str, any]]:
         return self.__current_chunk
 
-    def commit(
-        self, only_value: Optional[bool] = False, as_binary: Optional[bool] = False
-    ) -> None:
+    def commit(self, only_value: Optional[bool] = False) -> None:
         if self.__read_mode:
             raise ValueError("Cannot commit data in read mode!")
 
         data = self.__data if not only_value else self.__current_chunk
-        mode = "wb" if as_binary else "w"
-        file_path = self.__file_path + "b" if as_binary else self.__file_path
-        with open(file_path, mode) as f:
-            if as_binary:
+        with open(self.__file_path, f"w{self.__binary_mode}") as f:
+            if self.__binary_mode:
                 pickle.dump(data, f)
             else:
                 json.dump(data, f, indent=4)
